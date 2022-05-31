@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from matplotlib.pyplot import show
 from typing import List, Union
-from load_data_v2 import LoadData
+from load_data import LoadData
 from fit import Fit
 import importlib.util
 import sys
