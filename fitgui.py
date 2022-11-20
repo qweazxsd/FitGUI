@@ -170,7 +170,7 @@ class FitGUI(QMainWindow):
         grid.addWidget(self.toolButton_help_method, 3, 1)
 
         self.comboBox_method = QComboBox(self.centralwidget)
-        self.comboBox_method.addItems(['ODR', 'Least Squares'])
+        self.comboBox_method.addItems(['Least Squares', 'ODR'])
         grid.addWidget(self.comboBox_method, 3, 2, 1, 2)
 
         # 5'th row
@@ -195,6 +195,7 @@ class FitGUI(QMainWindow):
         grid.addWidget(self.label_dxcol, 4, 4)
 
         self.spinBox_dxcol = QSpinBox(self.centralwidget)
+        self.spinBox_dxcol.setDisabled(True)
         grid.addWidget(self.spinBox_dxcol, 4, 5)
 
         self.label_ycol = QLabel(self.centralwidget)
@@ -222,6 +223,12 @@ class FitGUI(QMainWindow):
 
         self.lineEdit_listpoints = QLineEdit(self.centralwidget)
         grid.addWidget(self.lineEdit_listpoints, 5, 2, 1, 3)
+        self.lineEdit_listpoints.setDisabled(True)
+
+        self.checkBox_dy = QCheckBox(self.centralwidget)
+        self.checkBox_dy.setText('Include dY')
+        self.checkBox_dy.setChecked(True)
+        grid.addWidget(self.checkBox_dy, 5, 8, 1, 2)
 
         # 7'th row
         self.label_params = QLabel(self.centralwidget)
@@ -381,7 +388,8 @@ class FitGUI(QMainWindow):
         self.actionLoad_Data_File.triggered.connect(self.browsefilesdata)
         self.actionLoad_Model_File.triggered.connect(self.browsefilesmodel)
 
-        self.comboBox_method.currentIndexChanged.connect(self.disable_dx)
+        self.comboBox_method.currentIndexChanged.connect(self.method_change)
+        self.checkBox_dy.clicked.connect(self.disable_dy)
 
         self.pushButton_fit.clicked.connect(self.fit)
         self.actionFit.triggered.connect(self.fit)
@@ -473,7 +481,12 @@ class FitGUI(QMainWindow):
 
             self.xcol = self.spinBox_xcol.value()
             self.ycol = self.spinBox_ycol.value()
-            self.dycol = self.spinBox_dycol.value()
+
+            if self.checkBox_dy.isChecked():
+                self.dycol = self.spinBox_dycol.value()
+            else:
+                self.dycol = None
+
             if self.method == 'odr':
                 self.dxcol = self.spinBox_dxcol.value()
             else:
@@ -537,26 +550,29 @@ class FitGUI(QMainWindow):
 
             self.results_textbox.append(self.fit.__str__())
 
+            if not self.checkBox_dy.isChecked():
+                self.results_textbox.append('\n\n***************\tdY NOT INCLUDED!\t***************\n\nALL CALCULATIONS USING CHI2 SHOULD BE TAKEN WITH A GRAIN OF SALT.\nWithout dY the formula taken for chi 2 is:\n\nchi2=sum[(y_i - y_fit)^2].\n')
+
             self.apply_partition()
 
             self.pushButton_fitresults.show()
 
             show()  # Show plotted graphs
 
-        except IndexError as e:
-            self.popupmsg("Most common error:\n"
-                          "The number of the provided initial parameters do not match the number which is defined by 'fit_function'.\n"
-                          "Error Type:\n" + "\n" + type(e).__name__ + "\n" +
-                          "\n---------------------------------\n" +
-                          "\nError Message:\n' + '\n" + str(e),
-                          'Error')
-        except TypeError as e:
-            self.popupmsg("Most common error:\n"
-                          "Method does not match the Model file.\n"
-                          "Error Type:\n" + "\n" + type(e).__name__ + "\n" +
-                          "\n---------------------------------\n" +
-                          "\nError Message:\n' + '\n" + str(e),
-                          'Error')
+        # except IndexError as e:
+        #     self.popupmsg("Most common error:\n"
+        #                   "The number of the provided initial parameters do not match the number which is defined by 'fit_function'.\n"
+        #                   "Error Type:\n" + "\n" + type(e).__name__ + "\n" +
+        #                   "\n---------------------------------\n" +
+        #                   "\nError Message:\n' + '\n" + str(e),
+        #                   'Error')
+        # except TypeError as e:
+        #     self.popupmsg("Most common error:\n"
+        #                   "Method does not match the Model file.\n"
+        #                   "Error Type:\n" + "\n" + type(e).__name__ + "\n" +
+        #                   "\n---------------------------------\n" +
+        #                   "\nError Message:\n' + '\n" + str(e),
+        #                   'Error')
 
         except Exception as e:
             self.popupmsg('Error Type:\n' + '\n' + type(e).__name__ + '\n' +
@@ -587,8 +603,12 @@ class FitGUI(QMainWindow):
     def get_fit_function_file_name(self) -> str:
         return self.lineEdit_pathmodel.text().split('/')[-1]
 
-    def disable_dx(self, index) -> None:
-        self.spinBox_dxcol.setEnabled(not index)
+    def method_change(self, index) -> None:
+        self.spinBox_dxcol.setEnabled(index)
+        self.checkBox_dy.setEnabled(not index)
+
+    def disable_dy(self, index) -> None:
+        self.spinBox_dycol.setEnabled(index)
 
     def get_method(self) -> str:
         """
@@ -672,16 +692,20 @@ class FitGUI(QMainWindow):
 
     def check_identical_cols_nums(self) -> None:
         if self.method == 'ls':
-            if self.xcol == self.ycol or self.xcol == self.dycol or self.dycol == self.ycol:
-                raise Exception('columns must be different for:\n x, y, dy')
-
-        if self.xcol == self.ycol \
-                or self.xcol == self.dycol \
-                or self.dycol == self.ycol \
-                or self.xcol == self.dxcol \
-                or self.dxcol == self.ycol \
-                or self.dxcol == self.dycol:
-            raise Exception('columns must be different for:\nx, y, dx, dy')
+            if not self.checkBox_dy.isChecked():
+                if self.xcol == self.ycol:
+                    raise Exception('columns must be different for:\n x, y')
+            else:
+                if self.xcol == self.ycol or self.xcol == self.dycol or self.dycol == self.ycol:
+                    raise Exception('columns must be different for:\n x, y, dy')
+        else:
+            if self.xcol == self.ycol \
+                    or self.xcol == self.dycol \
+                    or self.dycol == self.ycol \
+                    or self.xcol == self.dxcol \
+                    or self.dxcol == self.ycol \
+                    or self.dxcol == self.dycol:
+                raise Exception('columns must be different for:\nx, y, dx, dy')
 
     def show_current_input(self) -> None:
         input = f'Data Path: {self.lineEdit_pathdata.text()} -> DType: {type(self.lineEdit_pathdata.text())}\n' \

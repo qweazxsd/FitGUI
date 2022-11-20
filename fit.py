@@ -26,7 +26,11 @@ class Fit:
 
         self.x = data[:, colorder[0]]
         self.y = data[:, colorder[2]]
-        self.dy = data[:, colorder[3]]
+
+        if colorder[3] is None:
+            self.dy = None
+        else:
+            self.dy = data[:, colorder[3]]
 
         self.fitting_func = func
 
@@ -62,7 +66,10 @@ class Fit:
             self.yfit = self.fitting_func(self.xfit, *self.ep)  # Fitting function with estimated fitting params
             self.yfit_residuals = self.fitting_func(self.x, *self.ep)
 
-            self.chi2 = np.sum(((self.yfit_residuals - self.y) / self.dy) ** 2)
+            if self.dy is None:
+                self.chi2 = np.sum((self.yfit_residuals - self.y) ** 2)
+            else:
+                self.chi2 = np.sum(((self.yfit_residuals - self.y) / self.dy) ** 2)
 
         else:
             raise ValueError("To run ODR you must define dx and 'method' must be 'odr'\n"
