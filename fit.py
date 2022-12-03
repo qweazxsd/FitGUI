@@ -102,11 +102,11 @@ class Fit:
         fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; fit')
 
         if self.method == 'odr':
-            ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=10, elinewidth=3, fmt='.', ms=20, capthick=3, label='Data')
+            ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=10, elinewidth=3, fmt='.', ms=30, capthick=3, label='Data')
         elif self.method == 'ls':
-            ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=10, elinewidth=3, fmt='.', ms=20, capthick=3, label='Data')
+            ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=10, elinewidth=3, fmt='.', ms=30, capthick=3, label='Data')
 
-        ax.plot(self.xfit, self.yfit, lw=3, label='Fit')
+        ax.plot(self.xfit, self.yfit, lw=5, label='Fit')
         ax.set(title=fr'${title}$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())
         ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -124,10 +124,10 @@ class Fit:
         fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; Residuals')
 
         if self.method == 'odr':
-            ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, xerr=self.dx, ls='None', elinewidth=3, capsize=10, fmt='.', ms=20, capthick=3)
+            ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, xerr=self.dx, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
 
         elif self.method == 'ls':
-            ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=20, capthick=3)
+            ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
 
         ax.hlines(0, min(self.x), max(self.x), colors='r', lw=4, ls='dashed')
 
@@ -147,12 +147,12 @@ class Fit:
         fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; Initial Guess')
 
         if self.method == 'odr':
-            ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=2, elinewidth=1, fmt='.', ms=5, label='Data')
+            ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
             ax.plot(self.xfit, self.fitting_func(self.init_params, self.xfit), lw=1, label='Initial Guess')
 
         elif self.method == 'ls':
-            ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=2, elinewidth=1, fmt='.', ms=5, label='Data')
-            ax.plot(self.xfit, self.fitting_func(self.xfit, *self.init_params), lw=1, label='Initial Guess')
+            ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
+            ax.plot(self.xfit, self.fitting_func(self.xfit, *self.init_params), lw=5, label='Initial Guess')
 
         ax.set(title=r'$Initial\ Guess$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())
