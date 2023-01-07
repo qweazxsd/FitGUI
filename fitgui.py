@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import json
 from os.path import exists
+from openpyxl import load_workbook
 from PyQt5.QtGui import QFont
 
 if TYPE_CHECKING:
@@ -636,7 +637,6 @@ class FitGUI(QMainWindow):
 
         self.sheets = 0  # the default sheet number that pandas take is 0
         if self.data_fname.endswith(('.xlsx', '.xlsm')):
-            from openpyxl import load_workbook
 
             wb = load_workbook(self.data_fname, read_only=True)
             sheets = wb.sheetnames
