@@ -1,4 +1,4 @@
-﻿# FitGUI - GUI for data fitting written with PyQt5
+﻿# FitGUI - GUI for fitting data written with PyQt5
 ## Prerequisites
 
  1. Python installation
