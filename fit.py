@@ -37,7 +37,8 @@ class Fit:
         self.init_params = p0
         self.method = method
 
-        self.xfit = np.linspace(min(self.x), max(self.x), 200)
+        #self.xfit = np.linspace(min(self.x), max(self.x), 200)
+        self.xfit = self.x
 
         if self.ncols >= 4 and self.method == 'odr':  # ODR
             self.dx = data[:, colorder[1]]
