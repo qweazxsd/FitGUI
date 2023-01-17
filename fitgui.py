@@ -606,7 +606,7 @@ class FitGUI(QMainWindow):
 
     def method_change(self, index) -> None:
         self.spinBox_dxcol.setEnabled(index)
-        self.checkBox_dy.setEnabled(not index)
+        #self.checkBox_dy.setEnabled(not index)
 
     def disable_dy(self, index) -> None:
         self.spinBox_dycol.setEnabled(index)
