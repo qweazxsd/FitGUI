@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.odr import ODR, Model, RealData
-from typing import List, Union, Callable
+from typing import List, Union
 from scipy.stats import chi2
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -24,24 +24,22 @@ class Fit:
         self.npoints = data.shape[0]
         self.ncols = data.shape[1]
 
-        self.x = data[:, colorder[0]]
-        self.y = data[:, colorder[2]]
+        self.x = data[:, colorder[0]].astype(np.float)
+        self.y = data[:, colorder[2]].astype(np.float)
 
         if colorder[3] is None:
             self.dy = None
         else:
-            self.dy = data[:, colorder[3]]
+            self.dy = data[:, colorder[3]].astype(np.float)
 
         self.fitting_func = func
 
         self.init_params = p0
         self.method = method
 
-        #self.xfit = np.linspace(min(self.x), max(self.x), 200)
-        self.xfit = self.x
 
         if self.ncols >= 4 and self.method == 'odr':  # ODR
-            self.dx = data[:, colorder[1]]
+            self.dx = data[:, colorder[1]].astype(np.float)
 
             self.data = RealData(self.x, self.y, self.dx, self.dy)  # Inserting data to a form which ODR class accepts
 
@@ -55,7 +53,7 @@ class Fit:
 
             self.sd_ep = self.output.sd_beta  # List of standard deviation of estimated fitting parameters
 
-            self.yfit = self.fitting_func(self.ep, self.xfit)  # Fitting function with estimated fitting params
+            self.yfit = self.fitting_func(self.ep, self.x)  # Fitting function with estimated fitting params
             self.yfit_residuals = self.fitting_func(self.ep, self.x)
 
             self.chi2 = self.output.sum_square
@@ -64,7 +62,7 @@ class Fit:
             self.ep, self.cov_ep = curve_fit(self.fitting_func, self.x, self.y, p0=self.init_params, sigma=self.dy)  # Estimated fitting params and their covariance matrix
             self.sd_ep = np.sqrt(np.diag(self.cov_ep))  # List of standard deviation of estimated fitting parameters
 
-            self.yfit = self.fitting_func(self.xfit, *self.ep)  # Fitting function with estimated fitting params
+            self.yfit = self.fitting_func(self.x, *self.ep)  # Fitting function with estimated fitting params
             self.yfit_residuals = self.fitting_func(self.x, *self.ep)
 
             if self.dy is None:
@@ -107,7 +105,7 @@ class Fit:
         elif self.method == 'ls':
             ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=10, elinewidth=3, fmt='.', ms=30, capthick=3, label='Data')
 
-        ax.plot(self.xfit, self.yfit, lw=5, label='Fit')
+        ax.plot(self.x, self.yfit, lw=5, label='Fit')
         ax.set(title=fr'${title}$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())
         ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -149,11 +147,11 @@ class Fit:
 
         if self.method == 'odr':
             ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-            ax.plot(self.xfit, self.fitting_func(self.init_params, self.xfit), lw=1, label='Initial Guess')
+            ax.plot(self.x, self.fitting_func(self.init_params, self.x), lw=1, label='Initial Guess')
 
         elif self.method == 'ls':
             ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-            ax.plot(self.xfit, self.fitting_func(self.xfit, *self.init_params), lw=5, label='Initial Guess')
+            ax.plot(self.x, self.fitting_func(self.x, *self.init_params), lw=5, label='Initial Guess')
 
         ax.set(title=r'$Initial\ Guess$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())
