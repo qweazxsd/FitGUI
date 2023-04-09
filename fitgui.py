@@ -231,17 +231,30 @@ class FitGUI(QMainWindow):
         self.checkBox_dy.setChecked(True)
         grid.addWidget(self.checkBox_dy, 5, 8, 1, 2)
 
+        # 8'th row
+        self.checkBox_xrange = QCheckBox(self.centralwidget)
+        self.checkBox_xrange.setText('X Range:')
+        grid.addWidget(self.checkBox_xrange, 6, 0)
+
+        self.toolButton_help_xrange = QToolButton(self.centralwidget)
+        self.toolButton_help_xrange.setText('?')
+        grid.addWidget(self.toolButton_help_xrange, 6, 1)
+
+        self.lineEdit_xrange = QLineEdit(self.centralwidget)
+        grid.addWidget(self.lineEdit_xrange, 6, 2, 1, 3)
+        self.lineEdit_xrange.setDisabled(True)
+
         # 7'th row
         self.label_params = QLabel(self.centralwidget)
         self.label_params.setText('Initial Parameters:')
-        grid.addWidget(self.label_params, 6, 0)
+        grid.addWidget(self.label_params, 7, 0)
 
         self.toolButton_help_params = QToolButton(self.centralwidget)
         self.toolButton_help_params.setText('?')
-        grid.addWidget(self.toolButton_help_params, 6, 1)
+        grid.addWidget(self.toolButton_help_params, 7, 1)
 
         self.lineEdit_params = QLineEdit(self.centralwidget)
-        grid.addWidget(self.lineEdit_params, 6, 2, 1, 3)
+        grid.addWidget(self.lineEdit_params, 7, 2, 1, 3)
 
         # 8'th row
         self.label_labels = QLabel(self.centralwidget)
@@ -249,61 +262,61 @@ class FitGUI(QMainWindow):
         font0 = QFont()
         font0.setPointSize(14)
         self.label_labels.setFont(font0)
-        grid.addWidget(self.label_labels, 7, 0)
+        grid.addWidget(self.label_labels, 8, 0)
 
         self.toolButton_help_labels = QToolButton(self.centralwidget)
         self.toolButton_help_labels.setText('?')
-        grid.addWidget(self.toolButton_help_labels, 7, 1)
+        grid.addWidget(self.toolButton_help_labels, 8, 1)
 
         # 9'th row
         self.label_fittitle = QLabel(self.centralwidget)
         self.label_fittitle.setText('Fit Title:')
-        grid.addWidget(self.label_fittitle, 8, 0)
+        grid.addWidget(self.label_fittitle, 9, 0)
 
         self.lineEdit_fittitle = QLineEdit(self.centralwidget)
-        grid.addWidget(self.lineEdit_fittitle, 8, 2, 1, 3)
+        grid.addWidget(self.lineEdit_fittitle, 9, 2, 1, 3)
 
         self.checkBox_fit = QCheckBox(self.centralwidget)
         self.checkBox_fit.setChecked(True)
         self.checkBox_fit.setText('Plot fit')
-        grid.addWidget(self.checkBox_fit, 8, 6, 1, 3)
+        grid.addWidget(self.checkBox_fit, 9, 6, 1, 3)
 
         # 10'th Row
         self.label_fitxlabel = QLabel(self.centralwidget)
         self.label_fitxlabel.setText('Fit X Label:')
-        grid.addWidget(self.label_fitxlabel, 9, 0)
+        grid.addWidget(self.label_fitxlabel, 10, 0)
 
         self.lineEdit_fitxlabel = QLineEdit(self.centralwidget)
-        grid.addWidget(self.lineEdit_fitxlabel, 9, 2, 1, 3)
+        grid.addWidget(self.lineEdit_fitxlabel, 10, 2, 1, 3)
 
         self.checkBox_residuals = QCheckBox(self.centralwidget)
         self.checkBox_residuals.setChecked(True)
         self.checkBox_residuals.setText('Plot Residuals')
-        grid.addWidget(self.checkBox_residuals, 9, 6, 1, 3)
+        grid.addWidget(self.checkBox_residuals, 10, 6, 1, 3)
 
         # 11'th Row
         self.label_fitylabel = QLabel(self.centralwidget)
         self.label_fitylabel.setText('Fit Y Label:')
-        grid.addWidget(self.label_fitylabel, 10, 0)
+        grid.addWidget(self.label_fitylabel, 11, 0)
 
         self.lineEdit_fitylabel = QLineEdit(self.centralwidget)
-        grid.addWidget(self.lineEdit_fitylabel, 10, 2, 1, 3)
+        grid.addWidget(self.lineEdit_fitylabel, 11, 2, 1, 3)
 
         self.checkBox_initguess = QCheckBox(self.centralwidget)
         self.checkBox_initguess.setText('Plot Initial Guess')
-        grid.addWidget(self.checkBox_initguess, 10, 6, 1, 3)
+        grid.addWidget(self.checkBox_initguess, 11, 6, 1, 3)
 
         # 12'th Row
         self.label_resylabel = QLabel(self.centralwidget)
         self.label_resylabel.setText('Residuals Y Label:')
-        grid.addWidget(self.label_resylabel, 11, 0)
+        grid.addWidget(self.label_resylabel, 12, 0)
 
         self.lineEdit_resylabel = QLineEdit(self.centralwidget)
-        grid.addWidget(self.lineEdit_resylabel, 11, 2, 1, 3)
+        grid.addWidget(self.lineEdit_resylabel, 12, 2, 1, 3)
 
         self.label_hintresylabel = QLabel(self.centralwidget)
         self.label_hintresylabel.setText('(y - y(x))')
-        grid.addWidget(self.label_hintresylabel, 11, 5, 1, 2)
+        grid.addWidget(self.label_hintresylabel, 12, 5, 1, 2)
 
         # 13'th row
         self.pushButton_fitresults = QPushButton(self.centralwidget)
@@ -312,12 +325,12 @@ class FitGUI(QMainWindow):
         self.pushButton_fitresults.setCheckable(False)
         self.pushButton_fitresults.setChecked(False)
         self.pushButton_fitresults.hide()
-        grid.addWidget(self.pushButton_fitresults, 12, 0, 1, 2)  # TODO find better column for this button
+        grid.addWidget(self.pushButton_fitresults, 13, 0, 1, 2)  # TODO find better column for this button
 
         # 14'th Row
         self.pushButton_fit = QPushButton(self.centralwidget)
         self.pushButton_fit.setText('Fit!')
-        grid.addWidget(self.pushButton_fit, 13, 0, 1, 10)
+        grid.addWidget(self.pushButton_fit, 14, 0, 1, 10)
 
         # Setting central widget
         self.centralwidget.setLayout(grid)
@@ -377,6 +390,7 @@ class FitGUI(QMainWindow):
     def add_functionality(self) -> None:
 
         self.checkBox_delpoints.toggled['bool'].connect(self.lineEdit_listpoints.setEnabled)
+        self.checkBox_xrange.toggled['bool'].connect(self.lineEdit_xrange.setEnabled)
 
         self.actionSet_Default_Data_Path.triggered.connect(lambda: self.set_default_path('Data'))
         self.actionSet_Default_ODR_Model_Path.triggered.connect(lambda: self.set_default_path('ODR'))
@@ -525,12 +539,21 @@ class FitGUI(QMainWindow):
 
             init_params: List[str] = self.lineEdit_params.text().split(', ')
 
+            isxrange = self.checkBox_xrange.isChecked()
+            x_range = None
+            if isxrange:
+                x_range: List[str] = self.lineEdit_xrange.text().split(', ')
+                if len(x_range) > 2:
+                    self.popupmsg("Only 2 items in x range!", "error")
+                x_range = [float(x) for x in x_range]
+
             self.fit = Fit(
                 data,
                 [self.xcol, self.dxcol, self.ycol, self.dycol],
                 [float(p) for p in init_params],
                 self.fit_function,
-                self.method
+                x_range,
+                self.method,
             )
 
             title = self.lineEdit_fittitle.text()
