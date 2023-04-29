@@ -26,6 +26,7 @@ class Fit:
         self.ncols = data.shape[1]
 
         self.x = data[:, colorder[0]].astype(np.float)
+        self.xfit = np.linspace(self.x.min(), self.x.max(), 1000)
         self.y = data[:, colorder[2]].astype(np.float)
 
         if colorder[3] is None:
@@ -38,8 +39,9 @@ class Fit:
             low_bound = x_range[0]
             high_bound = x_range[1]
             if low_bound >= high_bound:
-                raise ValueError("low <= high. First os low and second is high")
+                raise ValueError("low <= high. First is low and second is high")
             self.condition = (low_bound <= self.x) & (self.x <= high_bound)
+            self.condition_xfit = (self.x[self.condition].min() <= self.xfit) & (self.xfit <= self.x[self.condition].max())
 
         self.fitting_func = func
 
@@ -70,11 +72,9 @@ class Fit:
             self.sd_ep = self.output.sd_beta  # List of standard deviation of estimated fitting parameters
 
             if self.condition is not None:
-                self.yfit = self.fitting_func(self.ep, self.x[self.condition])  # Fitting function with estimated fitting params
-                self.yfit_residuals = self.fitting_func(self.ep, self.x[self.condition])
+                self.yfit = self.fitting_func(self.ep, self.xfit[self.condition_xfit])  # Fitting function with estimated fitting params
             else:
-                self.yfit = self.fitting_func(self.ep, self.x)  # Fitting function with estimated fitting params
-                self.yfit_residuals = self.fitting_func(self.ep, self.x)
+                self.yfit = self.fitting_func(self.ep, self.xfit)  # Fitting function with estimated fitting params
 
             self.chi2 = self.output.sum_square
 
@@ -91,22 +91,22 @@ class Fit:
             self.sd_ep = np.sqrt(np.diag(self.cov_ep))  # List of standard deviation of estimated fitting parameters
 
             if self.condition is not None:
-                self.yfit = self.fitting_func(self.x[self.condition], *self.ep)  # Fitting function with estimated fitting params
-                self.yfit_residuals = self.fitting_func(self.x[self.condition], *self.ep)
+                self.yfit = self.fitting_func(self.xfit[self.condition_xfit], *self.ep)  # Fitting function with estimated fitting params
+                self.yfit_yshape = self.fitting_func(self.x[self.condition], *self.ep)  # Fitting function with estimated fitting params
 
                 if self.dy is None:
-                    self.chi2 = np.sum((self.yfit_residuals - self.y[self.condition]) ** 2)
+                    self.chi2 = np.sum((self.yfit_yshape - self.y[self.condition]) ** 2)
                 else:
-                    self.chi2 = np.sum(((self.yfit_residuals - self.y[self.condition]) / self.dy[self.condition]) ** 2)
+                    self.chi2 = np.sum(((self.yfit_yshape - self.y[self.condition]) / self.dy[self.condition]) ** 2)
 
             else:
-                self.yfit = self.fitting_func(self.x, *self.ep)  # Fitting function with estimated fitting params
-                self.yfit_residuals = self.fitting_func(self.x, *self.ep)
+                self.yfit = self.fitting_func(self.xfit, *self.ep)  # Fitting function with estimated fitting params
+                self.yfit_yshape = self.fitting_func(self.x, *self.ep)  # Fitting function with estimated fitting params
 
                 if self.dy is None:
-                    self.chi2 = np.sum((self.yfit_residuals - self.y) ** 2)
+                    self.chi2 = np.sum((self.yfit_yshape - self.y) ** 2)
                 else:
-                    self.chi2 = np.sum(((self.yfit_residuals - self.y) / self.dy) ** 2)
+                    self.chi2 = np.sum(((self.yfit_yshape - self.y) / self.dy) ** 2)
 
         else:
             raise ValueError("To run ODR you must define dx and 'method' must be 'odr'\n"
@@ -125,7 +125,10 @@ class Fit:
         str += f'chi squared = {self.chi2:.2f}\n'
         str += f'pvalue = {self.pvalue:.2f}\n'
         str += f'chi squared reduced = {self.chi2red:.2f}\n'
-        str += f'\nInitial Parameters = {self.init_params}'
+        str += f'\nInitial Parameters = {self.init_params}\n\n\n'
+        str += 'LaTeX form:\n\n'
+        for i, a in enumerate(self.ep):
+            str += fr'a_{i} = {a} \pm {self.sd_ep[i]}\ ({abs(self.sd_ep[i]*100/a):.2f}\%\ ' + r'\text{Rel. Error})\\' + '\n'
 
         return str
 
@@ -136,7 +139,7 @@ class Fit:
                  fit_num: int
                  ):
 
-        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; fit')
+        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}_fit')
 
         if self.method == 'odr':
             if self.condition is not None:
@@ -158,9 +161,9 @@ class Fit:
                 ax.errorbar(self.x, self.y, yerr=self.dy, ls='None', capsize=10, elinewidth=3, fmt='.', ms=30, capthick=3, label='Data')
 
         if self.condition is not None:
-            ax.plot(self.x[self.condition], self.yfit, lw=5, label='Fit')
+            ax.plot(self.xfit[self.condition_xfit], self.yfit, lw=5, label='Fit')
         else:
-            ax.plot(self.x, self.yfit, lw=5, label='Fit')
+            ax.plot(self.xfit, self.yfit, lw=5, label='Fit')
         ax.set(title=fr'${title}$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())
         ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -175,28 +178,28 @@ class Fit:
                  fit_num: int
                  ):
 
-        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; Residuals')
+        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}_Residuals')
 
         if self.method == 'odr':
             if self.condition is not None:
                 if self.dy is not None:
-                    ax.errorbar(self.x[self.condition], self.y - self.yfit_residuals, yerr=self.dy[self.condition], xerr=self.dx[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                    ax.errorbar(self.x[self.condition], self.y - self.yfit, yerr=self.dy[self.condition], xerr=self.dx[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
                 else:
-                    ax.errorbar(self.x[self.condition], self.y - self.yfit_residuals, yerr=self.dy, xerr=self.dx[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                    ax.errorbar(self.x[self.condition], self.y - self.yfit, yerr=self.dy, xerr=self.dx[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
             else:
-                ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, xerr=self.dx, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                ax.errorbar(self.x, self.y - self.yfit, yerr=self.dy, xerr=self.dx, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
 
 
         elif self.method == 'ls':
             if self.condition is not None:
                 if self.dy is not None:
-                    ax.errorbar(self.x[self.condition], self.y[self.condition] - self.yfit_residuals, yerr=self.dy[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                    ax.errorbar(self.x[self.condition], self.y[self.condition] - self.yfit, yerr=self.dy[self.condition], ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
                 else:
-                    ax.errorbar(self.x[self.condition], self.y[self.condition] - self.yfit_residuals, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                    ax.errorbar(self.x[self.condition], self.y[self.condition] - self.yfit, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
                 ax.hlines(0, min(self.x[self.condition]), max(self.x[self.condition]), colors='r', lw=4, ls='dashed')
 
             else:
-                ax.errorbar(self.x, self.y - self.yfit_residuals, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
+                ax.errorbar(self.x, self.y - self.yfit, yerr=self.dy, ls='None', elinewidth=3, capsize=10, fmt='.', ms=30, capthick=3)
                 ax.hlines(0, min(self.x), max(self.x), colors='r', lw=4, ls='dashed')
 
         ax.set(title=r'$Residuals$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
@@ -212,36 +215,36 @@ class Fit:
                  fit_num: int
                  ):
 
-        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}; Initial Guess')
+        fig, ax = plt.subplots(figsize=(15, 12), num=f'Fit {fit_num}_Initial Guess')
 
         if self.method == 'odr':
             if self.condition is not None:
                 if self.dy is not None:
                     ax.errorbar(self.x[self.condition], self.y[self.condition], yerr=self.dy[self.condition], xerr=self.dx[self.condition], ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-                    ax.plot(self.x[self.condition], self.fitting_func(self.init_params, self.x[self.condition]), lw=1, label='Initial Guess')
+                    ax.plot(self.xfit[self.condition_xfit], self.fitting_func(self.init_params, self.xfit[self.condition_xfit]), lw=1, label='Initial Guess')
                 else:
                     ax.errorbar(self.x[self.condition], self.y[self.condition], yerr=self.dy,
                                 xerr=self.dx[self.condition], ls='None', capsize=2, elinewidth=1, fmt='.', ms=30,
                                 label='Data')
-                    ax.plot(self.x[self.condition], self.fitting_func(self.init_params, self.x[self.condition]), lw=1,
+                    ax.plot(self.xfit[self.condition_xfit], self.fitting_func(self.init_params, self.xfit[self.condition_xfit]), lw=1,
                             label='Initial Guess')
             else:
                 ax.errorbar(self.x, self.y, yerr=self.dy, xerr=self.dx, ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-                ax.plot(self.x, self.fitting_func(self.init_params, self.x), lw=1, label='Initial Guess')
+                ax.plot(self.xfit, self.fitting_func(self.init_params, self.xfit), lw=1, label='Initial Guess')
 
         elif self.method == 'ls':
             if self.condition is not None:
                 if self.dy is not None:
                     ax.errorbar(self.x[self.condition], self.y[self.condition], yerr=self.dy[self.condition], ls='None', capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-                    ax.plot(self.x[self.condition], self.fitting_func(self.x[self.condition], *self.init_params), lw=5, label='Initial Guess')
+                    ax.plot(self.xfit[self.condition_xfit], self.fitting_func(self.xfit[self.condition_xfit], *self.init_params), lw=5, label='Initial Guess')
                 else:
                     ax.errorbar(self.x[self.condition], self.y[self.condition], yerr=self.dy, ls='None',
                                 capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-                    ax.plot(self.x[self.condition], self.fitting_func(self.x[self.condition], *self.init_params), lw=5,
+                    ax.plot(self.xfit[self.condition_xfit], self.fitting_func(self.xfit[self.condition_xfit], *self.init_params), lw=5,
                             label='Initial Guess')
             else:
                 ax.errorbar(self.x, self.y, yerr=self.dy, ls='None',capsize=2, elinewidth=1, fmt='.', ms=30, label='Data')
-                ax.plot(self.x, self.fitting_func(self.x, *self.init_params), lw=5, label='Initial Guess')
+                ax.plot(self.xfit, self.fitting_func(self.xfit, *self.init_params), lw=5, label='Initial Guess')
 
         ax.set(title=r'$Initial\ Guess$', xlabel=fr'${xlabel}$', ylabel=fr'${ylabel}$')
         ax.xaxis.set_minor_locator(AutoMinorLocator())

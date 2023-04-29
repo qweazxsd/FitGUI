@@ -576,6 +576,8 @@ class FitGUI(QMainWindow):
 
             if not self.checkBox_dy.isChecked():
                 self.results_textbox.append('\n\n***************\tdY NOT INCLUDED!\t***************\n\nALL CALCULATIONS USING CHI2 SHOULD BE TAKEN WITH A GRAIN OF SALT.\nWithout dY the formula taken for chi 2 is:\n\nchi2=sum[(y_i - y_fit)^2].\n')
+            if self.checkBox_xrange.isChecked():
+                self.results_textbox.append(f"X Range: {x_range}\n")
 
             self.apply_partition()
 
